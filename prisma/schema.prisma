@@ -3,21 +3,20 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model School {
-  id       Int    @id @default(autoincrement())
-  name     String @db.VarChar(255)
-  address  String @db.Text
-  city     String @db.VarChar(100)
-  state    String @db.VarChar(100)
-  contact  String @db.VarChar(20)
-  image    String @db.VarChar(500)
-  email_id String @db.VarChar(255)
-  
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  city      String
+  state     String
+  contact   String
+  image     String
+  email_id  String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
