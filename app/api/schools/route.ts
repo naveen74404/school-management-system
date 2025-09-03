@@ -1,32 +1,42 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { uploadImageToCloudinary } from "@/lib/cloudinary";
+// /app/api/schools/route.ts (for Next.js 13+ with App Router)
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+
+export async function GET() {
+  try {
+    const schools = await prisma.school.findMany({
+      orderBy: { createdAt: 'desc' },
+    })
+    return NextResponse.json({ success: true, data: schools })
+  } catch (error) {
+    console.error('GET /api/schools error:', error)
+    return NextResponse.json({ success: false, error: 'Failed to fetch schools' }, { status: 500 })
+  }
+}
 
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData();
-    const name = formData.get("name") as string;
-    const file = formData.get("image") as File;
+    const body = await req.json()
 
-    // Convert File to Buffer
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const imageUrl = await uploadImageToCloudinary(buffer, file.name);
+    if (!body.name || !body.address || !body.city || !body.state || !body.contact || !body.email_id) {
+      return NextResponse.json({ success: false, error: 'All fields are required' }, { status: 400 })
+    }
 
-    const school = await prisma.school.create({
+    const newSchool = await prisma.school.create({
       data: {
-        name,
-        image: imageUrl,
-        address: formData.get("address") as string,
-        city: formData.get("city") as string,
-        state: formData.get("state") as string,
-        contact: formData.get("contact") as string,
-        email_id: formData.get("email_id") as string,
+        name: body.name,
+        address: body.address,
+        city: body.city,
+        state: body.state,
+        contact: body.contact,
+        email_id: body.email_id,
+        image: body.imageBase64 || '',
       },
-    });
+    })
 
-    return NextResponse.json(school);
+    return NextResponse.json({ success: true, data: newSchool })
   } catch (error) {
-    console.error("Error creating school:", error);
-    return NextResponse.json({ error: "Failed to create school" }, { status: 500 });
+    console.error('POST /api/schools error:', error)
+    return NextResponse.json({ success: false, error: 'Failed to add school' }, { status: 500 })
   }
 }
